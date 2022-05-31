@@ -102,7 +102,7 @@
 #define REST 0
 
 //vector for the first melody
-int melody1[] = {
+int melody4[] = {
   NOTE_FS5,8, NOTE_FS5,8,NOTE_D5,8, NOTE_B4,8, REST,8, NOTE_B4,8, REST,8, NOTE_E5,8, 
   REST,8, NOTE_E5,8, REST,8, NOTE_E5,8, NOTE_GS5,8, NOTE_GS5,8, NOTE_A5,8, NOTE_B5,8,
   NOTE_A5,8, NOTE_A5,8, NOTE_A5,8, NOTE_E5,8, REST,8, NOTE_D5,8, REST,8, NOTE_FS5,8, 
@@ -180,6 +180,50 @@ int melody3[] = {
   NOTE_C4,-1,
 };
 
+int melody1[] = {
+
+  // Hedwig's theme fromn the Harry Potter Movies
+  // Socre from https://musescore.com/user/3811306/scores/4906610
+  
+  REST, 2, NOTE_D4, 4,
+  NOTE_G4, -4, NOTE_AS4, 8, NOTE_A4, 4,
+  NOTE_G4, 2, NOTE_D5, 4,
+  NOTE_C5, -2, 
+  NOTE_A4, -2,
+  NOTE_G4, -4, NOTE_AS4, 8, NOTE_A4, 4,
+  NOTE_F4, 2, NOTE_GS4, 4,
+  NOTE_D4, -1, 
+  NOTE_D4, 4,
+
+  NOTE_G4, -4, NOTE_AS4, 8, NOTE_A4, 4, //10
+  NOTE_G4, 2, NOTE_D5, 4,
+  NOTE_F5, 2, NOTE_E5, 4,
+  NOTE_DS5, 2, NOTE_B4, 4,
+  NOTE_DS5, -4, NOTE_D5, 8, NOTE_CS5, 4,
+  NOTE_CS4, 2, NOTE_B4, 4,
+  NOTE_G4, -1,
+  NOTE_AS4, 4,
+     
+  NOTE_D5, 2, NOTE_AS4, 4,//18
+  NOTE_D5, 2, NOTE_AS4, 4,
+  NOTE_DS5, 2, NOTE_D5, 4,
+  NOTE_CS5, 2, NOTE_A4, 4,
+  NOTE_AS4, -4, NOTE_D5, 8, NOTE_CS5, 4,
+  NOTE_CS4, 2, NOTE_D4, 4,
+  NOTE_D5, -1, 
+  REST,4, NOTE_AS4,4,  
+
+  NOTE_D5, 2, NOTE_AS4, 4,//26
+  NOTE_D5, 2, NOTE_AS4, 4,
+  NOTE_F5, 2, NOTE_E5, 4,
+  NOTE_DS5, 2, NOTE_B4, 4,
+  NOTE_DS5, -4, NOTE_D5, 8, NOTE_CS5, 4,
+  NOTE_CS4, 2, NOTE_AS4, 4,
+  NOTE_G4, -1,  
+  
+};
+
+
 int notedurations1[] = {
    8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 4, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 4, 8, 8, 8, 8, 2
 };
@@ -206,14 +250,15 @@ const int BUTTON_F = 3;
 const int BUTTON_G = 7;
 const int BUTTON_A = 9;
 const int BUTTON_S = 10;
-unsigned const BUTTON_Trumpet = 8;
+unsigned const BUTTON_T = 8;
 const int MUSIC = 11;
 const int STOP = 12;
 
 int status = false;
-int status_trumpet = false;
+int status_t = false;
 int on = 0;
-int trumpet = 0;
+int t = 0;
+int mode2 = false;
 int song = 1;
 uint8_t btn_prev_c;
 uint8_t btn_prev_d;
@@ -224,7 +269,7 @@ uint8_t btn_prev_a;
 uint8_t btn_prev_s;
 uint8_t btn_prev_music;
 uint8_t btn_prev_stop;
-uint8_t btn_prev_trumpet;
+uint8_t btn_prev_t;
 
 
 void setup()
@@ -234,8 +279,8 @@ void setup()
     pinMode(BUTTON, INPUT_PULLUP);
     pinMode(BUZZER_PIN, INPUT);
 
-    pinMode(BUTTON_Trumpet, INPUT_PULLUP);
-    btn_prev_trumpet = digitalRead(BUTTON_Trumpet);
+    pinMode(BUTTON_T, INPUT_PULLUP);
+    btn_prev_t = digitalRead(BUTTON_T);
  
     pinMode(BUTTON_C, INPUT_PULLUP);
     btn_prev_c = digitalRead(BUTTON_C);
@@ -268,7 +313,6 @@ void setup()
 
 void loop()
 {
-   //int analogValue = analogRead(POTENTIOMETER_PIN);
   if (digitalRead(BUTTON) == true) {
     status = !status;
     Serial.println(on);
@@ -281,18 +325,27 @@ void loop()
     }
    } 
 
-     uint8_t btn_trumpet = digitalRead(BUTTON_Trumpet);
-   if (btn_trumpet == LOW && btn_prev_trumpet == HIGH && on == 1) { 
-    status_trumpet = !status_trumpet;
-    Serial.println("trumpet");
-    Serial.println(trumpet);
-    if (status_trumpet == 1) {
-       trumpet = 1;
-       Serial.println("pressed trumpet mode");
+     uint8_t btn_t = digitalRead(BUTTON_T);
+   if (btn_t == LOW && btn_prev_t == HIGH && on == 1) { 
+    status_t = !status_t;
+
+    if (status_t == 1 && mode2 == 0) {
+       t = 1;
+       mode2 = !mode2;
+       Serial.println("pressed mode 1");
+       Serial.println(t);
+      } else  if (status_t == 1 && mode2 == 1) {
+        t = 2;
+        mode2 = 0;
+        Serial.println("pressed mode 2");
+        Serial.println(t);
       } else {
-        trumpet = 0;
-        Serial.println("unpressed trumpet mode");
+          t = 0;
+          Serial.println("unpressed trumpet mode");
+          Serial.println(t);
       }
+      
+     
       digitalWrite(LED,HIGH);
       delay(100);
    }
@@ -300,16 +353,17 @@ void loop()
    uint8_t btn_c = digitalRead(BUTTON_C);
    if (btn_c == LOW && btn_prev_c == HIGH && on == 1) { 
        Serial.println("pressed DO");
-       if (trumpet == 0) {
+       if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, 262);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 1915 );
-        }
-       pinMode(BUZZER_PIN, OUTPUT);
-       //tone(BUZZER_PIN, 262);
-       tone(BUZZER_PIN, 1915 );
+        } else if (t == 2) {
+          pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 1088);
+          }
+
        digitalWrite(LED,HIGH);
       delay(300);
    }
@@ -318,12 +372,15 @@ void loop()
    if (btn_d == LOW && btn_prev_d == HIGH && on == 1) { 
        Serial.println("pressed RE");
        
-        if (trumpet == 0) {
+        if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, T_D);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 1700 );
+        } else if (t == 2) {
+          pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 997);
         }
        digitalWrite(LED,HIGH);
       delay(300);
@@ -332,12 +389,15 @@ void loop()
   uint8_t btn_e = digitalRead(BUTTON_E);
    if (btn_e == LOW && btn_prev_e == HIGH && on == 1) { 
        Serial.println("pressed MI");
-        if (trumpet == 0) {
+        if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, T_E);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 1519);
+        } else if (t == 2) {
+          pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 924);
         }
        digitalWrite(LED,HIGH);
       delay(300);
@@ -346,12 +406,15 @@ void loop()
   uint8_t btn_f = digitalRead(BUTTON_F);
    if (btn_f == LOW && btn_prev_f == HIGH && on == 1) { 
        Serial.println("pressed FA");
-         if (trumpet == 0) {
+         if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, T_F);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 1432 );
+        } else if (t == 2) {
+          pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 890);
         }
        digitalWrite(LED,HIGH);
       delay(300);
@@ -360,12 +423,15 @@ void loop()
      uint8_t btn_g = digitalRead(BUTTON_G);
    if (btn_g == LOW && btn_prev_g == HIGH && on == 1) { 
        Serial.println("pressed SO");
-         if (trumpet == 0) {
+         if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, T_G);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 1275);
+        } else if (t == 2) {
+          pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 820);
         }
        digitalWrite(LED,HIGH);
       delay(300);
@@ -374,12 +440,15 @@ void loop()
         uint8_t btn_a = digitalRead(BUTTON_A);
    if (btn_a == LOW && btn_prev_a == HIGH && on == 1) { 
        Serial.println("pressed LA");
-        if (trumpet == 0) {
+        if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, T_A);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN,  1014);
+        } else if (t == 2) {
+           pinMode(BUZZER_PIN, OUTPUT);
+           tone(BUZZER_PIN, 727);
         }
        digitalWrite(LED,HIGH);
       delay(300);
@@ -388,33 +457,42 @@ void loop()
        uint8_t btn_s = digitalRead(BUTTON_S);
    if (btn_s == LOW && btn_prev_s == HIGH && on == 1) { 
        Serial.println("pressed SI");
-          if (trumpet == 0) {
+          if (t == 0) {
            pinMode(BUZZER_PIN, OUTPUT);
            tone(BUZZER_PIN, SI);
-        } else {
+        } else if (t == 1){
           pinMode(BUZZER_PIN, OUTPUT);
           tone(BUZZER_PIN, 956 );
+        } else if (t == 2) {
+           pinMode(BUZZER_PIN, OUTPUT);
+          tone(BUZZER_PIN, 700);
         }
-       pinMode(BUZZER_PIN, OUTPUT);
-       tone(BUZZER_PIN, SI);
        digitalWrite(LED,HIGH);
       delay(300);
    }
 
    uint8_t btn_music = digitalRead(MUSIC);
    if (btn_music == LOW && btn_prev_music == HIGH && on == 1) { 
-       Serial.println("pressed music");
+      
         if (song == 1) {
+           Serial.println("pressed music 1");
        notes = sizeof(melody1) / sizeof(melody1[0]);
-       playSong(melody1, notes, 140);
+       playSong(melody1, notes, 144);
        song++;
      }else if (song == 2) {
+       Serial.println("pressed music 2");
        notes = sizeof(melody2) / sizeof(melody2[0]);
        playSong(melody2, notes, 120);
        song++;
      } else if (song == 3) {
+       Serial.println("pressed music 3");
        notes = sizeof(melody3) / sizeof(melody3[0]);
        playSong(melody3, notes, 140);
+       song ++;
+     }else if (song == 4) {
+       Serial.println("pressed music 4");
+       notes = sizeof(melody4) / sizeof(melody4[0]);
+       playSong(melody4, notes, 140);
        song = 1;
      }
    }
@@ -437,9 +515,6 @@ void loop()
 void playSong(int melody[], int notes, int tempo){
   // this calculates the duration of a whole note in ms
 int wholenote = (60000 * 4) / tempo;
- // notes = sizeof(melody) / sizeof(melody[0]);
-    // iterate over the notes of the melody.
-  // Remember, the array is twice the number of notes (notes + durations)
   for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
 
     // calculates the duration of each note
@@ -453,23 +528,19 @@ int wholenote = (60000 * 4) / tempo;
       noteDuration *= 1.5; // increases the duration in half for dotted notes
     }
 
-    // we only play the note for 90% of the duration, leaving 10% as a pause
     pinMode(BUZZER_PIN, OUTPUT);
-   // tone(BUZZER_PIN, melody[thisNote], noteDuration * 0.9);
     tone(BUZZER_PIN, melody[thisNote]);
 
     // Wait for the specief duration before playing the next note.
     delay(noteDuration);
-
-    // stop the waveform generation before the next note.
     
     noTone(BUZZER_PIN);
     pinMode(BUZZER_PIN, INPUT);
-      
-   if (digitalRead(STOP) == LOW){ // may have to hold while the current note finishes
+    
+    //stop the song 
+   if (digitalRead(STOP) == LOW){
       break;
-   // or maybe this
-     thisNote = notes*2 +1;}  // force the loop to finish
+     thisNote = notes*2 +1;}  
   } 
 
 }
